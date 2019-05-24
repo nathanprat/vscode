@@ -432,11 +432,19 @@ export class Git {
 			options.stdio = ['ignore', null, null]; // Unless provided, ignore stdin and leave default streams for stdout and stderr
 		}
 
+		// add git specific env vars from settings.json: git.commandAdditionalEnvVars
+		// This is a dictionnary, so it can be assigned directly
+		// TODO(nathanprat) check that its a dict
+		// TODO(nathanprat) handle vars like ${workspaceFolder}
+		// TODO(nathanprat) eval in bash context, eg accept ~/somefolder
+		const config = workspace.getConfiguration('git');
+		const commandAdditionalEnvVars = config.get<Object>('commandAdditionalEnvVars');
+
 		options.env = assign({}, process.env, this.env, options.env || {}, {
 			VSCODE_GIT_COMMAND: args[0],
 			LC_ALL: 'en_US.UTF-8',
 			LANG: 'en_US.UTF-8'
-		});
+		}, commandAdditionalEnvVars);
 
 		if (options.log !== false) {
 			this.log(`> git ${args.join(' ')}\n`);
